@@ -1,0 +1,31 @@
+services:
+  app:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/lms-db
+      - PORT=3000
+      - NODE_ENV=production
+    depends_on:
+      - mongo
+    networks:
+      - lms-network
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - lms-network
+volumes:
+  mongo_data:
+
+networks:
+  lms-network:
+    driver: bridge
+
+
+
