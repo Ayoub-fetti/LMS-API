@@ -9,10 +9,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.JWT_SECRET || 'fallback-secret',
+      ignoreExpiration: false, // Vérifie automatiquement l'expiration
     });
   }
 
   async validate(payload: any) {
+    // Vérification explicite de l'expiration
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      throw new UnauthorizedException('Token expiré');
+    }
+
     const user = await this.userService.findById(payload.sub);
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Utilisateur introuvable ou inactif');

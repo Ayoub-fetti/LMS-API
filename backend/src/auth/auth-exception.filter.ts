@@ -1,19 +1,31 @@
 import { ExceptionFilter, Catch, ArgumentsHost, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { Response } from 'express';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
-@Catch(UnauthorizedException, ForbiddenException)
+@Catch(UnauthorizedException, ForbiddenException, TokenExpiredError, JsonWebTokenError)
 export class AuthExceptionFilter implements ExceptionFilter {
-  catch(exception: UnauthorizedException | ForbiddenException, host: ArgumentsHost) {
+  catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const status = exception.getStatus();
+    
+    let status = 401;
+    let message = 'Erreur d\'authentification';
 
-    const errorResponse = {
+    if (exception instanceof TokenExpiredError) {
+      message = 'Token expiré';
+    } else if (exception instanceof JsonWebTokenError) {
+      message = 'Token invalide';
+    } else if (exception instanceof ForbiddenException) {
+      status = 403;
+      message = 'Accès refusé';
+    } else if (exception.message?.includes('expiré')) {
+      message = 'Token expiré';
+    }
+
+    response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
-      message: status === 401 ? 'Token invalide ou expiré' : 'Accès refusé',
-    };
-
-    response.status(status).json(errorResponse);
+      message,
+    });
   }
 }
