@@ -19,6 +19,13 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getMe(@Request() req) {
+    const { password, ...user } = req.user.toObject();
+    return user;
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
