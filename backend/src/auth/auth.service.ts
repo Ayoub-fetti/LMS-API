@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from '../dto/register.dto';
@@ -42,5 +42,16 @@ export class AuthService {
       role: user.role,
     };
     return this.jwtService.sign(payload);
+  }
+  async updateProfile(userId: string, updateProfileDto: any) {
+    const user = await this.userService.updateProfile(userId, updateProfileDto);
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur introuvable');
+    }
+    const { password, ...result } = user.toObject();
+    return {
+      message: 'Profil mis à jour avec succès',
+      user: result,
+    };
   }
 }

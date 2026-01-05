@@ -44,4 +44,12 @@ export class UserService {
     return this.userModel.findById(id);
   }
 
+  async updateProfile(id: string, updateData: any): Promise<User | null> {
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+    
+    return this.userModel.findByIdAndUpdate(id, updateData, { new: true });
+  }
+
 }
