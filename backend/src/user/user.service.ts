@@ -39,4 +39,9 @@ export class UserService {
 
     return user;
   }
+
+  async findById(id: string): Promise<User> {
+    return this.userModel.findById(id);
+  }
+
 }
