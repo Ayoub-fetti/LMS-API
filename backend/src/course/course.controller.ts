@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Patch, Body, UseGuards, Request, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, UseGuards, Request, Param } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
@@ -10,6 +10,11 @@ import { UserRole } from '../enums/user-role.enum';
 @Controller('courses')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
+
+  @Get()
+  async findPublished() {
+    return this.courseService.findPublished();
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.INSTRUCTOR)
