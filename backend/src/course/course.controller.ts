@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Body, UseGuards, Request, Param } from '@nestjs/common';
+import { Controller, Post, Put, Patch, Body, UseGuards, Request, Param } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
@@ -23,5 +23,19 @@ export class CourseController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto, @Request() req) {
     return this.courseService.update(id, updateCourseDto, req.user._id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.INSTRUCTOR)
+  @Patch(':id/publish')
+  async publish(@Param('id') id: string, @Request() req) {
+    return this.courseService.publish(id, req.user._id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.INSTRUCTOR)
+  @Patch(':id/unpublish')
+  async unpublish(@Param('id') id: string, @Request() req) {
+    return this.courseService.unpublish(id, req.user._id);
   }
 }

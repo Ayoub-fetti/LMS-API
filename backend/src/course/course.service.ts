@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Course } from '../schemas/course.schema';
+import { Course, CourseStatus } from '../schemas/course.schema';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
 
@@ -28,6 +28,32 @@ export class CourseService {
     }
 
     const updatedCourse = await this.courseModel.findByIdAndUpdate(id, updateCourseDto, { new: true });
+    if (!updatedCourse) {
+      throw new NotFoundException('Cours non trouvé');
+    }
+    
+    return updatedCourse;
+  }
+
+  async publish(id: string, instructorId: string): Promise<Course> {
+    return this.updateStatus(id, instructorId, CourseStatus.PUBLISHED);
+  }
+
+  async unpublish(id: string, instructorId: string): Promise<Course> {
+    return this.updateStatus(id, instructorId, CourseStatus.DRAFT);
+  }
+
+  private async updateStatus(id: string, instructorId: string, status: CourseStatus): Promise<Course> {
+    const course = await this.courseModel.findById(id);
+    if (!course) {
+      throw new NotFoundException('Cours non trouvé');
+    }
+    
+    if (!course.instructor.equals(instructorId)) {
+      throw new ForbiddenException('Accès refusé');
+    }
+
+    const updatedCourse = await this.courseModel.findByIdAndUpdate(id, { status }, { new: true });
     if (!updatedCourse) {
       throw new NotFoundException('Cours non trouvé');
     }
