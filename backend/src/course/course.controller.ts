@@ -21,6 +21,11 @@ export class CourseController {
     return this.courseService.findPublished(pageNum, limitNum);
   }
 
+  @Get(':id')
+  async findById(@Param('id') id: string) {
+    return this.courseService.findById(id);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STUDENT)
   @Post(':id/enroll')

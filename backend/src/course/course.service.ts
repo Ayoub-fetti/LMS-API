@@ -37,31 +37,37 @@ export class CourseService {
     };
   }
 
-  async enroll(courseId: string, studentId: string): Promise<Enrollment> {
-    const course = await this.courseModel.findById(courseId);
+  async findById(courseId: string): Promise<Course> {
+    await this.verifyVisibility(courseId);
+    
+    const course = await this.courseModel
+      .findById(courseId)
+      .populate('instructor', 'firstName lastName email');
+      
     if (!course) {
       throw new NotFoundException('Cours non trouvé');
     }
+    
+    return course;
+  }
 
-    if (course.status !== CourseStatus.PUBLISHED) {
-      throw new ForbiddenException('Ce cours n\'est pas disponible pour inscription');
+
+  async enroll(courseId: string, studentId: string): Promise<Enrollment> {
+    await this.verifyVisibility(courseId);
+
+    try {
+      const enrollment = new this.enrollmentModel({
+        student: studentId,
+        course: courseId
+      });
+
+      return await enrollment.save();
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new ConflictException('Vous êtes déjà inscrit à ce cours');
+      }
+      throw error;
     }
-
-    const existingEnrollment = await this.enrollmentModel.findOne({
-      student: studentId,
-      course: courseId
-    });
-
-    if (existingEnrollment) {
-      throw new ConflictException('Vous êtes déjà inscrit à ce cours');
-    }
-
-    const enrollment = new this.enrollmentModel({
-      student: studentId,
-      course: courseId
-    });
-
-    return enrollment.save();
   }
 
   async create(createCourseDto: CreateCourseDto, instructorId: string): Promise<Course> {
@@ -96,6 +102,19 @@ export class CourseService {
       throw new NotFoundException('Cours non trouvé');
     }
     return updatedCourse;
+  }
+
+  private async verifyVisibility(courseId: string): Promise<Course> {
+    const course = await this.courseModel.findById(courseId);
+    if (!course) {
+      throw new NotFoundException('Cours non trouvé');
+    }
+    
+    if (course.status !== CourseStatus.PUBLISHED) {
+      throw new ForbiddenException('Ce cours n\'est pas disponible');
+    }
+    
+    return course;
   }
 
   private async verifyOwnership(courseId: string, instructorId: string): Promise<Course> {
