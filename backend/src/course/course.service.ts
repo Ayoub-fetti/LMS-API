@@ -18,20 +18,11 @@ export class CourseService {
   }
 
   async update(id: string, updateCourseDto: UpdateCourseDto, instructorId: string): Promise<Course> {
-    const course = await this.courseModel.findById(id);
-    if (!course) {
-      throw new NotFoundException('Cours non trouvé');
-    }
-    
-    if (!course.instructor.equals(instructorId)) {
-      throw new ForbiddenException('Accès refusé');
-    }
-
+    await this.verifyOwnership(id, instructorId);
     const updatedCourse = await this.courseModel.findByIdAndUpdate(id, updateCourseDto, { new: true });
     if (!updatedCourse) {
       throw new NotFoundException('Cours non trouvé');
     }
-    
     return updatedCourse;
   }
 
@@ -44,20 +35,24 @@ export class CourseService {
   }
 
   private async updateStatus(id: string, instructorId: string, status: CourseStatus): Promise<Course> {
-    const course = await this.courseModel.findById(id);
+    await this.verifyOwnership(id, instructorId);
+    const updatedCourse = await this.courseModel.findByIdAndUpdate(id, { status }, { new: true });
+    if (!updatedCourse) {
+      throw new NotFoundException('Cours non trouvé');
+    }
+    return updatedCourse;
+  }
+
+  private async verifyOwnership(courseId: string, instructorId: string): Promise<Course> {
+    const course = await this.courseModel.findById(courseId);
     if (!course) {
       throw new NotFoundException('Cours non trouvé');
     }
     
     if (!course.instructor.equals(instructorId)) {
-      throw new ForbiddenException('Accès refusé');
-    }
-
-    const updatedCourse = await this.courseModel.findByIdAndUpdate(id, { status }, { new: true });
-    if (!updatedCourse) {
-      throw new NotFoundException('Cours non trouvé');
+      throw new ForbiddenException('Accès refusé - Vous n\'êtes pas le propriétaire de ce cours');
     }
     
-    return updatedCourse;
+    return course;
   }
 }
