@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Body, UseGuards, Request, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, UseGuards, Request, Param, Query } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
@@ -12,8 +12,13 @@ export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
   @Get()
-  async findPublished() {
-    return this.courseService.findPublished();
+  async findPublished(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10'
+  ) {
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    return this.courseService.findPublished(pageNum, limitNum);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

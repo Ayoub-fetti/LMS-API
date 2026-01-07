@@ -9,11 +9,28 @@ import { UpdateCourseDto } from '../dto/update-course.dto';
 export class CourseService {
   constructor(@InjectModel(Course.name) private courseModel: Model<Course>) {}
 
-  async findPublished(): Promise<Course[]> {
-    return this.courseModel
-      .find({ status: CourseStatus.PUBLISHED })
-      .populate('instructor', 'firstName lastName email')
-      .sort({ createdAt: -1 });
+  async findPublished(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+    
+    const [courses, total] = await Promise.all([
+      this.courseModel
+        .find({ status: CourseStatus.PUBLISHED })
+        .populate('instructor', 'firstName lastName email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.courseModel.countDocuments({ status: CourseStatus.PUBLISHED })
+    ]);
+
+    return {
+      courses,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
   }
 
   async create(createCourseDto: CreateCourseDto, instructorId: string): Promise<Course> {
