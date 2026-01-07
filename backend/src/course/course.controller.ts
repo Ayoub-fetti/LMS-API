@@ -22,6 +22,13 @@ export class CourseController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STUDENT)
+  @Post(':id/enroll')
+  async enroll(@Param('id') courseId: string, @Request() req) {
+    return this.courseService.enroll(courseId, req.user._id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.INSTRUCTOR)
   @Post()
   async create(@Body() createCourseDto: CreateCourseDto, @Request() req) {

@@ -1,13 +1,17 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Course, CourseStatus } from '../schemas/course.schema';
+import { Enrollment } from '../schemas/enrollment.schema';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
 
 @Injectable()
 export class CourseService {
-  constructor(@InjectModel(Course.name) private courseModel: Model<Course>) {}
+  constructor(
+    @InjectModel(Course.name) private courseModel: Model<Course>,
+    @InjectModel(Enrollment.name) private enrollmentModel: Model<Enrollment>
+  ) {}
 
   async findPublished(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
@@ -31,6 +35,33 @@ export class CourseService {
         totalPages: Math.ceil(total / limit)
       }
     };
+  }
+
+  async enroll(courseId: string, studentId: string): Promise<Enrollment> {
+    const course = await this.courseModel.findById(courseId);
+    if (!course) {
+      throw new NotFoundException('Cours non trouvé');
+    }
+
+    if (course.status !== CourseStatus.PUBLISHED) {
+      throw new ForbiddenException('Ce cours n\'est pas disponible pour inscription');
+    }
+
+    const existingEnrollment = await this.enrollmentModel.findOne({
+      student: studentId,
+      course: courseId
+    });
+
+    if (existingEnrollment) {
+      throw new ConflictException('Vous êtes déjà inscrit à ce cours');
+    }
+
+    const enrollment = new this.enrollmentModel({
+      student: studentId,
+      course: courseId
+    });
+
+    return enrollment.save();
   }
 
   async create(createCourseDto: CreateCourseDto, instructorId: string): Promise<Course> {
