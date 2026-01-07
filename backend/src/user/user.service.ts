@@ -4,7 +4,9 @@ import { Model } from 'mongoose';
 import { User } from '../schemas/user.schema';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
+import { UserRole } from '../enums/user-role.enum';
 import * as bcrypt from 'bcrypt';
+
 
 @Injectable()
 export class UserService {
@@ -51,5 +53,10 @@ export class UserService {
     
     return this.userModel.findByIdAndUpdate(id, updateData, { new: true });
   }
+
+  async updateRole(userId: string, role: UserRole): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(userId, { role }, { new: true });
+  }
+
 
 }

@@ -3,6 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
+import { UserRole } from '../enums/user-role.enum';
+import { User } from '../schemas/user.schema';
+
 
 @Injectable()
 export class AuthService {
@@ -54,4 +57,8 @@ export class AuthService {
       user: result,
     };
   }
+  async updateUserRole(userId: string, role: UserRole): Promise<User | null> {
+    return this.userService.updateRole(userId, role);
+  }
+
 }

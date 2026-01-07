@@ -1,9 +1,13 @@
-import { Controller, Post, Body, Get, Put, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Put, UseGuards, Request, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { UpdateRoleDto } from '../dto/update-role.dto';
+import { RolesGuard } from './role.guard';
+import { Roles } from './roles.decorator';
+import { UserRole } from '../enums/user-role.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -30,5 +34,11 @@ export class AuthController {
   @Put('me')
   async updateMe(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
     return this.authService.updateProfile(req.user._id, updateProfileDto);
+  }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Put('users/:id/role')
+  async updateUserRole(@Param('id') userId: string, @Body() updateRoleDto: UpdateRoleDto) {
+    return this.authService.updateUserRole(userId, updateRoleDto.role);
   }
 }
