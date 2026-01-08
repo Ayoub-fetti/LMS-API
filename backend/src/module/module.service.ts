@@ -33,7 +33,12 @@ export class ModuleService {
     
     await this.verifyCourseOwnership(module.course.toString(), instructorId);
     
-    return this.moduleModel.findByIdAndUpdate(moduleId, updateData, { new: true });
+    const updatedModule = await this.moduleModel.findByIdAndUpdate(moduleId, updateData, { new: true });
+    if (!updatedModule) {
+      throw new NotFoundException('Module non trouvé');
+    }
+    
+    return updatedModule;
   }
 
   private async verifyCourseOwnership(courseId: string, instructorId: string): Promise<void> {
@@ -54,4 +59,18 @@ export class ModuleService {
     
     return lastModule ? lastModule.order + 1 : 1;
   }
+  async findByCourse(courseId: string): Promise<Module[]> {
+    return this.moduleModel
+      .find({ course: courseId })
+      .sort({ order: 1 });
+  }
+
+  async findById(moduleId: string): Promise<Module> {
+    const module = await this.moduleModel.findById(moduleId);
+    if (!module) {
+      throw new NotFoundException('Module non trouvé');
+    }
+    return module;
+  }
+
 }
