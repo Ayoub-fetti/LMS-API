@@ -26,6 +26,9 @@ export class Course extends Document {
 
   @Prop({ default: [] })
   tags: string[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Module' }], default: [] })
+  modules: Types.ObjectId[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
