@@ -20,4 +20,13 @@ export class QuizController {
       submitQuizDto.answers,
     );
   }
+
+  @Get(':id/attempts')
+  async getAttempts(
+    @Param('id') quizId: string,
+    @Request() req: any,
+  ) {
+    return this.quizSubmissionService.getAttempts(quizId, req.user.userId);
+  }
+
 }

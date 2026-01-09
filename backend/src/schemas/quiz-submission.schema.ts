@@ -29,6 +29,9 @@ export class QuizSubmission extends Document {
 
   @Prop({ required: true })
   submittedAt: Date;
+
+  @Prop({ required: true, default: 1 })
+  attemptNumber: number;
 }
 
 export const QuizSubmissionSchema = SchemaFactory.createForClass(QuizSubmission);

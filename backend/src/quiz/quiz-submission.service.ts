@@ -38,6 +38,12 @@ export class QuizSubmissionService {
     const quiz = await this.quizModel.findById(quizId);
     const questions = await this.questionModel.find({ quiz: quizId });
     
+    // Compter les tentatives précédentes
+    const previousAttempts = await this.submissionModel.countDocuments({
+      quiz: quizId,
+      student: studentId
+    });
+
     const { score } = this.calculateScore(questions, answers);
     const passed = score >= quiz.passingScore;
 
@@ -52,7 +58,16 @@ export class QuizSubmissionService {
       answers: processedAnswers,
       score,
       passed,
-      submittedAt: new Date()
+      submittedAt: new Date(),
+      attemptNumber: previousAttempts + 1
     });
   }
+
+  async getAttempts(quizId: string, studentId: string) {
+    return this.submissionModel.find({
+      quiz: quizId,
+      student: studentId
+    }).sort({ attemptNumber: 1 });
+  }
+
 }
