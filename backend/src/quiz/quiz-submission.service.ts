@@ -13,35 +13,44 @@ export class QuizSubmissionService {
     @InjectModel(Question.name) private questionModel: Model<Question>,
   ) {}
 
+  private calculateScore(questions: Question[], answers: any[]) {
+    let totalScore = 0;
+    let maxScore = 0;
+
+    answers.forEach(answer => {
+      const question = questions.find(q => q._id.toString() === answer.questionId);
+      if (question) {
+        maxScore += question.points;
+        if (question.correctAnswer === answer.answer) {
+          totalScore += question.points;
+        }
+      }
+    });
+
+    return {
+      score: maxScore > 0 ? (totalScore / maxScore) * 100 : 0,
+      totalScore,
+      maxScore
+    };
+  }
+
   async submitQuiz(quizId: string, studentId: string, answers: any[]) {
     const quiz = await this.quizModel.findById(quizId);
     const questions = await this.questionModel.find({ quiz: quizId });
     
-    let totalScore = 0;
-    let maxScore = 0;
+    const { score } = this.calculateScore(questions, answers);
+    const passed = score >= quiz.passingScore;
 
-    const processedAnswers = answers.map(answer => {
-      const question = questions.find(q => q._id.toString() === answer.questionId);
-      maxScore += question.points;
-      
-      if (question.correctAnswer === answer.answer) {
-        totalScore += question.points;
-      }
-
-      return {
-        question: answer.questionId,
-        answer: answer.answer
-      };
-    });
-
-    const scorePercentage = (totalScore / maxScore) * 100;
-    const passed = scorePercentage >= quiz.passingScore;
+    const processedAnswers = answers.map(answer => ({
+      question: answer.questionId,
+      answer: answer.answer
+    }));
 
     return this.submissionModel.create({
       quiz: quizId,
       student: studentId,
       answers: processedAnswers,
-      score: scorePercentage,
+      score,
       passed,
       submittedAt: new Date()
     });
