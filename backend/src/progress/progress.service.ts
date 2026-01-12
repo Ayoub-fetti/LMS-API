@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Progress } from '../schemas/progress.schema';
 import { Module } from '../schemas/module.schema';
+import { Quiz } from '../schemas/quiz.schema';
 
 @Injectable()
 export class ProgressService {
   constructor(
     @InjectModel(Progress.name) private progressModel: Model<Progress>,
     @InjectModel(Module.name) private moduleModel: Model<Module>,
+    @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
   ) {}
 
   async initializeProgress(studentId: string, courseId: string): Promise<Progress> {
@@ -84,9 +86,17 @@ export class ProgressService {
       throw new NotFoundException('Progression non trouvée');
     }
 
+    // Vérifier si le module a un quiz associé
+    const quiz = await this.quizModel.findOne({ module: moduleId });
+    
     // Ajouter le module aux modules complétés s'il n'y est pas déjà
     if (!progress.completedModules.includes(moduleId as any)) {
       progress.completedModules.push(moduleId as any);
+    }
+
+    // Ajouter le quiz aux quiz complétés si le module en a un
+    if (quiz && !progress.completedQuizzes.includes(quiz._id as any)) {
+      progress.completedQuizzes.push(quiz._id as any);
     }
 
     // Calculer le pourcentage de complétion
@@ -96,10 +106,11 @@ export class ProgressService {
     );
 
     // Passer au module suivant
+    const currentModule = await this.moduleModel.findById(moduleId);
     const nextModule = await this.moduleModel
       .findOne({
         course: courseId,
-        order: { $gt: (await this.moduleModel.findById(moduleId))?.order || 0 },
+        order: { $gt: currentModule?.order || 0 },
       })
       .sort({ order: 1 });
 

@@ -8,6 +8,7 @@ import { QuestionService } from './question.service';
 import { Quiz, QuizSchema } from '../schemas/quiz.schema';
 import { QuizSubmission, QuizSubmissionSchema } from '../schemas/quiz-submission.schema';
 import { Question, QuestionSchema } from '../schemas/question.schema';
+import { ProgressModule } from '../progress/progress.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { Question, QuestionSchema } from '../schemas/question.schema';
       { name: QuizSubmission.name, schema: QuizSubmissionSchema },
       { name: Question.name, schema: QuestionSchema },
     ]),
+    ProgressModule,
   ],
   controllers: [QuizController, QuestionController],
   providers: [QuizSubmissionService, QuizService, QuestionService],

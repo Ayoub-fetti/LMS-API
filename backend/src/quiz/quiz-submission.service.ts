@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { QuizSubmission } from '../schemas/quiz-submission.schema';
 import { Quiz } from '../schemas/quiz.schema';
 import { Question } from '../schemas/question.schema';
+import { ProgressService } from '../progress/progress.service';
 
 @Injectable()
 export class QuizSubmissionService {
@@ -11,6 +12,7 @@ export class QuizSubmissionService {
     @InjectModel(QuizSubmission.name) private submissionModel: Model<QuizSubmission>,
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
     @InjectModel(Question.name) private questionModel: Model<Question>,
+    private progressService: ProgressService,
   ) {}
 
   private calculateScore(questions: Question[], answers: any[]) {
@@ -35,7 +37,7 @@ export class QuizSubmissionService {
   }
 
   async submitQuiz(quizId: string, studentId: string, answers: any[]) {
-    const quiz = await this.quizModel.findById(quizId);
+    const quiz = await this.quizModel.findById(quizId).populate('module');
     if (!quiz) {
       throw new Error('Quiz not found');
     }
@@ -56,7 +58,7 @@ export class QuizSubmissionService {
       answer: answer.answer
     }));
 
-    return this.submissionModel.create({
+    const submission = await this.submissionModel.create({
       quiz: quizId,
       student: studentId,
       answers: processedAnswers,
@@ -65,6 +67,21 @@ export class QuizSubmissionService {
       submittedAt: new Date(),
       attemptNumber: previousAttempts + 1
     });
+
+    // Si le quiz est réussi, marquer le module comme complété
+    if (passed && quiz.module) {
+      const moduleData: any = quiz.module;
+      const moduleId = moduleData._id.toString();
+      const courseId = moduleData.course.toString();
+      
+      try {
+        await this.progressService.completeModule(studentId, courseId, moduleId);
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour de la progression:', error);
+      }
+    }
+
+    return submission;
   }
 
   async getAttempts(quizId: string, studentId: string) {
