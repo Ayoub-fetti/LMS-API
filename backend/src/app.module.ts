@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { CourseModule } from './course/course.module';
 import { ModuleModule } from './module/module.module';
 import { QuizModule } from './quiz/quiz.module';
+import { ProgressModule } from './progress/progress.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { QuizModule } from './quiz/quiz.module';
     CourseModule,
     ModuleModule,
     QuizModule,
+    ProgressModule,
   ],
   controllers: [AppController],
   providers: [AppService],

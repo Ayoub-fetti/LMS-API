@@ -10,7 +10,7 @@ import { UpdateCourseDto } from '../dto/update-course.dto';
 export class CourseService {
   constructor(
     @InjectModel(Course.name) private courseModel: Model<Course>,
-    @InjectModel(Enrollment.name) private enrollmentModel: Model<Enrollment>
+    @InjectModel(Enrollment.name) private enrollmentModel: Model<Enrollment>,
   ) {}
 
   async findPublished(page: number = 1, limit: number = 10) {
@@ -52,7 +52,7 @@ export class CourseService {
   }
 
 
-  async enroll(courseId: string, studentId: string): Promise<Enrollment> {
+  async enroll(courseId: string, studentId: string): Promise<{ enrollment: Enrollment; message: string }> {
     await this.verifyVisibility(courseId);
 
     try {
@@ -61,7 +61,12 @@ export class CourseService {
         course: courseId
       });
 
-      return await enrollment.save();
+      await enrollment.save();
+
+      return {
+        enrollment,
+        message: 'Inscription réussie'
+      };
     } catch (error) {
       if (error.code === 11000) {
         throw new ConflictException('Vous êtes déjà inscrit à ce cours');

@@ -4,13 +4,15 @@ import { CourseController } from './course.controller';
 import { CourseService } from './course.service';
 import { Course, CourseSchema } from '../schemas/course.schema';
 import { Enrollment, EnrollmentSchema } from '../schemas/enrollment.schema';
+import { ProgressModule } from '../progress/progress.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Course.name, schema: CourseSchema },
-      { name: Enrollment.name, schema: EnrollmentSchema }
-    ])
+      { name: Enrollment.name, schema: EnrollmentSchema },
+    ]),
+    ProgressModule,
   ],
   controllers: [CourseController],
   providers: [CourseService],
