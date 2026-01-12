@@ -36,6 +36,10 @@ export class QuizSubmissionService {
 
   async submitQuiz(quizId: string, studentId: string, answers: any[]) {
     const quiz = await this.quizModel.findById(quizId);
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+    
     const questions = await this.questionModel.find({ quiz: quizId });
     
     // Compter les tentatives précédentes
@@ -69,5 +73,4 @@ export class QuizSubmissionService {
       student: studentId
     }).sort({ attemptNumber: 1 });
   }
-
 }

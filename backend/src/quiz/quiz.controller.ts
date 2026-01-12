@@ -2,6 +2,7 @@ import { Controller, Post, Body, Param, UseGuards, Request, Get } from '@nestjs/
 import { QuizSubmissionService } from './quiz-submission.service';
 import { QuizService } from './quiz.service';
 import { SubmitQuizDto } from '../dto/submit-quiz.dto';
+import { CreateQuizDto } from '../dto/create-quiz.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('quiz')
@@ -11,6 +12,11 @@ export class QuizController {
     private readonly quizSubmissionService: QuizSubmissionService,
     private readonly quizService: QuizService,
   ) {}
+
+  @Post()
+  async createQuiz(@Body() createQuizDto: CreateQuizDto) {
+    return this.quizService.create(createQuizDto);
+  }
 
   @Get(':id')
   async getQuiz(@Param('id') quizId: string) {
@@ -23,9 +29,10 @@ export class QuizController {
     @Body() submitQuizDto: SubmitQuizDto,
     @Request() req: any,
   ) {
+    console.log('User from request:', req.user);
     return this.quizSubmissionService.submitQuiz(
       quizId,
-      req.user.userId,
+      req.user._id || req.user.id,
       submitQuizDto.answers,
     );
   }
@@ -35,6 +42,6 @@ export class QuizController {
     @Param('id') quizId: string,
     @Request() req: any,
   ) {
-    return this.quizSubmissionService.getAttempts(quizId, req.user.userId);
+    return this.quizSubmissionService.getAttempts(quizId, req.user._id || req.user.id);
   }
 }

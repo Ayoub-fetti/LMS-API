@@ -10,7 +10,6 @@ export class QuizService {
   constructor(
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
     @InjectModel(Question.name) private questionModel: Model<Question>,
-
   ) {}
 
   async create(createQuizDto: CreateQuizDto) {
@@ -22,16 +21,12 @@ export class QuizService {
     });
   }
 
-  async findByModule(moduleId: string) {
-    return this.quizModel.find({ module: moduleId });
-  }
-
-  async findById(id: string) {
-    return this.quizModel.findById(id).populate('module');
-  }
-
   async getQuizForStudent(quizId: string) {
     const quiz = await this.quizModel.findById(quizId).populate('module');
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+    
     const questions = await this.questionModel.find({ quiz: quizId }).select('-correctAnswer');
     
     return {
@@ -40,4 +35,11 @@ export class QuizService {
     };
   }
 
+  async findByModule(moduleId: string) {
+    return this.quizModel.find({ module: moduleId });
+  }
+
+  async findById(id: string) {
+    return this.quizModel.findById(id).populate('module');
+  }
 }

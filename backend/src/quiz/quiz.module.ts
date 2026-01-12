@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { QuizController } from './quiz.controller';
+import { QuestionController } from './question.controller';
 import { QuizSubmissionService } from './quiz-submission.service';
+import { QuizService } from './quiz.service';
+import { QuestionService } from './question.service';
 import { Quiz, QuizSchema } from '../schemas/quiz.schema';
 import { QuizSubmission, QuizSubmissionSchema } from '../schemas/quiz-submission.schema';
-import { QuizService } from './quiz.service';
 import { Question, QuestionSchema } from '../schemas/question.schema';
 
 @Module({
@@ -15,7 +17,7 @@ import { Question, QuestionSchema } from '../schemas/question.schema';
       { name: Question.name, schema: QuestionSchema },
     ]),
   ],
-  controllers: [QuizController],
-  providers: [QuizSubmissionService, QuizService],
+  controllers: [QuizController, QuestionController],
+  providers: [QuizSubmissionService, QuizService, QuestionService],
 })
 export class QuizModule {}
