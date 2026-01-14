@@ -26,7 +26,7 @@ export class ProgressService {
 
     // Récupérer le premier module du cours
     const firstModule = await this.moduleModel
-      .findOne({ course: courseId })
+      .findOne({ course: courseId, status: { $ne: 'archived' } })
       .sort({ order: 1 });
 
     // Créer la progression initiale
@@ -50,6 +50,58 @@ export class ProgressService {
       .populate('currentModule')
       .populate('completedModules')
       .populate('completedQuizzes');
+  }
+
+  async getDetailedProgress(studentId: string, courseId: string): Promise<any> {
+    const progress = await this.progressModel
+      .findOne({ student: studentId, course: courseId })
+      .populate('currentModule')
+      .populate('completedModules')
+      .populate('completedQuizzes');
+
+    if (!progress) {
+      throw new NotFoundException('Progression non trouvée');
+    }
+
+    // Récupérer tous les modules du cours
+    const allModules = await this.moduleModel
+      .find({ course: courseId, status: { $ne: 'archived' } })
+      .sort({ order: 1 });
+
+    // Calculer des statistiques détaillées
+    const totalModules = allModules.length;
+    const completedModules = progress.completedModules.length;
+    const remainingModules = totalModules - completedModules;
+
+    // Calculer le temps estimé restant
+    const estimatedTimeRemaining = allModules
+      .filter(module => 
+        !progress.completedModules.some(id => id.toString() === module._id.toString())
+      )
+      .reduce((total, module) => total + (module.duration || 0), 0);
+
+    return {
+      ...progress.toObject(),
+      statistics: {
+        totalModules,
+        completedModules,
+        remainingModules,
+        completionPercentage: progress.completionPercentage,
+        totalTimeSpent: progress.totalTimeSpent,
+        estimatedTimeRemaining,
+        lastAccessedAt: progress.lastAccessedAt,
+      },
+      modulesList: allModules.map(module => ({
+        _id: module._id,
+        title: module.title,
+        order: module.order,
+        duration: module.duration,
+        isCompleted: progress.completedModules.some(
+          id => id.toString() === module._id.toString()
+        ),
+        isCurrent: progress.currentModule?.toString() === module._id.toString(),
+      })),
+    };
   }
 
   async updateCurrentModule(
@@ -99,11 +151,8 @@ export class ProgressService {
       progress.completedQuizzes.push(quiz._id as any);
     }
 
-    // Calculer le pourcentage de complétion
-    const totalModules = await this.moduleModel.countDocuments({ course: courseId });
-    progress.completionPercentage = Math.round(
-      (progress.completedModules.length / totalModules) * 100,
-    );
+    // Recalculer la progression globale
+    await this.updateCompletionPercentage(progress, courseId);
 
     // Passer au module suivant
     const currentModule = await this.moduleModel.findById(moduleId);
@@ -111,11 +160,15 @@ export class ProgressService {
       .findOne({
         course: courseId,
         order: { $gt: currentModule?.order || 0 },
+        status: { $ne: 'archived' },
       })
       .sort({ order: 1 });
 
     if (nextModule) {
       progress.currentModule = nextModule._id as any;
+    } else {
+      // Si plus de module suivant, le cours est terminé
+      progress.completionPercentage = 100;
     }
 
     progress.lastAccessedAt = new Date();
@@ -165,5 +218,30 @@ export class ProgressService {
     progress.lastAccessedAt = new Date();
 
     return progress.save();
+  }
+
+  private async updateCompletionPercentage(
+    progress: Progress,
+    courseId: string,
+  ): Promise<void> {
+    // Compter le nombre total de modules du cours (non archivés)
+    const totalModules = await this.moduleModel.countDocuments({ 
+      course: courseId,
+      status: { $ne: 'archived' }
+    });
+
+    if (totalModules === 0) {
+      progress.completionPercentage = 0;
+      return;
+    }
+
+    // Calculer le pourcentage basé sur les modules complétés
+    const completedCount = progress.completedModules.length;
+    progress.completionPercentage = Math.round((completedCount / totalModules) * 100);
+    
+    // S'assurer que le pourcentage ne dépasse pas 100
+    if (progress.completionPercentage > 100) {
+      progress.completionPercentage = 100;
+    }
   }
 }
