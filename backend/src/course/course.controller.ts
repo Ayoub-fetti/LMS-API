@@ -31,6 +31,16 @@ export class CourseController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.INSTRUCTOR)
+  @Get(':id/students/progress')
+  async getStudentsProgress(
+    @Param('id') courseId: string,
+    @Request() req: any
+  ) {
+    return this.courseService.getStudentsProgress(courseId, req.user._id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STUDENT)
   @Post(':id/enroll')
   async enroll(@Param('id') courseId: string, @Request() req: any) {
