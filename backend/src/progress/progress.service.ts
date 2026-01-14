@@ -45,11 +45,19 @@ export class ProgressService {
   }
 
   async getProgress(studentId: string, courseId: string): Promise<Progress | null> {
-    return this.progressModel
+    const progress = await this.progressModel
       .findOne({ student: studentId, course: courseId })
       .populate('currentModule')
       .populate('completedModules')
       .populate('completedQuizzes');
+
+    // Mettre à jour la date de dernier accès
+    if (progress) {
+      progress.lastAccessedAt = new Date();
+      await progress.save();
+    }
+
+    return progress;
   }
 
   async getDetailedProgress(studentId: string, courseId: string): Promise<any> {
@@ -80,6 +88,10 @@ export class ProgressService {
       )
       .reduce((total, module) => total + (module.duration || 0), 0);
 
+    // Mettre à jour la date de dernier accès
+    progress.lastAccessedAt = new Date();
+    await progress.save();
+
     return {
       ...progress.toObject(),
       statistics: {
@@ -101,6 +113,44 @@ export class ProgressService {
         ),
         isCurrent: progress.currentModule?.toString() === module._id.toString(),
       })),
+    };
+  }
+
+  async resumeCourse(studentId: string, courseId: string): Promise<any> {
+    const progress = await this.progressModel
+      .findOne({ student: studentId, course: courseId })
+      .populate('currentModule');
+
+    if (!progress) {
+      throw new NotFoundException('Progression non trouvée. Veuillez vous inscrire au cours.');
+    }
+
+    // Si aucun module actuel défini, trouver le prochain module non complété
+    if (!progress.currentModule) {
+      const nextModule = await this.findNextIncompleteModule(progress, courseId);
+      
+      if (nextModule) {
+        progress.currentModule = nextModule._id as any;
+        progress.lastAccessedAt = new Date();
+        await progress.save();
+      }
+    } else {
+      // Mettre à jour la date de dernier accès
+      progress.lastAccessedAt = new Date();
+      await progress.save();
+    }
+
+    return {
+      message: 'Reprise du cours avec succès',
+      progress: {
+        currentModule: progress.currentModule,
+        completionPercentage: progress.completionPercentage,
+        completedModules: progress.completedModules.length,
+        lastAccessedAt: progress.lastAccessedAt,
+      },
+      resumeUrl: progress.currentModule 
+        ? `/courses/${courseId}/modules/${progress.currentModule._id}`
+        : `/courses/${courseId}`,
     };
   }
 
@@ -169,6 +219,7 @@ export class ProgressService {
     } else {
       // Si plus de module suivant, le cours est terminé
       progress.completionPercentage = 100;
+      progress.currentModule = null;
     }
 
     progress.lastAccessedAt = new Date();
@@ -218,6 +269,35 @@ export class ProgressService {
     progress.lastAccessedAt = new Date();
 
     return progress.save();
+  }
+
+  async getAllStudentProgress(studentId: string): Promise<any[]> {
+    const allProgress = await this.progressModel
+      .find({ student: studentId })
+      .populate('course', 'title description status')
+      .populate('currentModule', 'title order')
+      .sort({ lastAccessedAt: -1 });
+
+    return allProgress.map(progress => ({
+      courseId: progress.course,
+      currentModule: progress.currentModule,
+      completionPercentage: progress.completionPercentage,
+      completedModules: progress.completedModules.length,
+      lastAccessedAt: progress.lastAccessedAt,
+      totalTimeSpent: progress.totalTimeSpent,
+      canResume: progress.currentModule !== null,
+    }));
+  }
+
+  private async findNextIncompleteModule(progress: Progress, courseId: string): Promise<any> {
+    // Trouver le premier module non complété
+    const allModules = await this.moduleModel
+      .find({ course: courseId, status: { $ne: 'archived' } })
+      .sort({ order: 1 });
+
+    return allModules.find(module => 
+      !progress.completedModules.some(id => id.toString() === module._id.toString())
+    );
   }
 
   private async updateCompletionPercentage(

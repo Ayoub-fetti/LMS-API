@@ -64,7 +64,7 @@ export class ModuleService {
 
   async findByCourse(courseId: string, studentId?: string): Promise<any[]> {
     const modules = await this.moduleModel
-      .find({ course: courseId })
+      .find({ course: courseId, status: { $ne: 'archived' } })
       .sort({ order: 1 });
 
     // Si un studentId est fourni, ajouter les informations d'accès
@@ -75,15 +75,33 @@ export class ModuleService {
       });
 
       if (progress) {
+        // Recalculer la progression si nécessaire
+        const totalModules = modules.length;
+        const completedCount = progress.completedModules.length;
+        const calculatedPercentage = totalModules > 0 
+          ? Math.round((completedCount / totalModules) * 100) 
+          : 0;
+
+        // Mettre à jour si différent
+        if (progress.completionPercentage !== calculatedPercentage) {
+          progress.completionPercentage = calculatedPercentage;
+          await progress.save();
+        }
+
         return modules.map((module) => {
           const moduleObj = module.toObject();
+          const isCompleted = progress.completedModules.some(
+            (id) => id.toString() === module._id.toString()
+          );
+          const isCurrent = progress.currentModule?.toString() === module._id.toString();
+          
           return {
             ...moduleObj,
             isLocked: !this.isModuleAccessible(module._id.toString(), progress),
-            isCompleted: progress.completedModules.some(
-              (id) => id.toString() === module._id.toString()
-            ),
-            isCurrent: progress.currentModule?.toString() === module._id.toString(),
+            isCompleted,
+            isCurrent,
+            // Indiquer si c'est le point de reprise
+            isResumePoint: isCurrent && !isCompleted,
           };
         });
       }
@@ -96,6 +114,7 @@ export class ModuleService {
           isLocked: index !== 0,
           isCompleted: false,
           isCurrent: index === 0,
+          isResumePoint: index === 0,
         };
       });
     }
