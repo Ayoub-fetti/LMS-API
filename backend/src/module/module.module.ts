@@ -4,12 +4,14 @@ import { ModuleController } from './module.controller';
 import { ModuleService } from './module.service';
 import { Module as ModuleSchema, ModuleSchema as ModuleSchemaDefinition } from '../schemas/module.schema';
 import { Course, CourseSchema } from '../schemas/course.schema';
+import { Progress, ProgressSchema } from '../schemas/progress.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ModuleSchema.name, schema: ModuleSchemaDefinition },
-      { name: Course.name, schema: CourseSchema }
+      { name: Course.name, schema: CourseSchema },
+      { name: Progress.name, schema: ProgressSchema },
     ])
   ],
   controllers: [ModuleController],
