@@ -34,4 +34,5 @@ export class QuizSubmission extends Document {
   attemptNumber: number;
 }
 
-export const QuizSubmissionSchema = SchemaFactory.createForClass(QuizSubmission);
+export const QuizSubmissionSchema =
+  SchemaFactory.createForClass(QuizSubmission);

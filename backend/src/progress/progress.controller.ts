@@ -1,4 +1,13 @@
-import { Controller, Get, Put, Param, Body, UseGuards, Request, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Param,
+  Body,
+  UseGuards,
+  Request,
+  Post,
+} from '@nestjs/common';
 import { ProgressService } from './progress.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/role.guard';
@@ -22,7 +31,10 @@ export class ProgressController {
   }
 
   @Get('course/:courseId/detailed')
-  async getDetailedProgress(@Param('courseId') courseId: string, @Request() req: any) {
+  async getDetailedProgress(
+    @Param('courseId') courseId: string,
+    @Request() req: any,
+  ) {
     return this.progressService.getDetailedProgress(req.user._id, courseId);
   }
 
@@ -38,7 +50,11 @@ export class ProgressController {
     @Param('moduleId') moduleId: string,
     @Request() req: any,
   ) {
-    return this.progressService.updateCurrentModule(req.user._id, courseId, moduleId);
+    return this.progressService.updateCurrentModule(
+      req.user._id,
+      courseId,
+      moduleId,
+    );
   }
 
   @Put('course/:courseId/module/:moduleId/complete')
@@ -47,7 +63,11 @@ export class ProgressController {
     @Param('moduleId') moduleId: string,
     @Request() req: any,
   ) {
-    return this.progressService.completeModule(req.user._id, courseId, moduleId);
+    return this.progressService.completeModule(
+      req.user._id,
+      courseId,
+      moduleId,
+    );
   }
 
   @Put('course/:courseId/time')
@@ -56,6 +76,10 @@ export class ProgressController {
     @Body('minutes') minutes: number,
     @Request() req: any,
   ) {
-    return this.progressService.updateTimeSpent(req.user._id, courseId, minutes);
+    return this.progressService.updateTimeSpent(
+      req.user._id,
+      courseId,
+      minutes,
+    );
   }
 }

@@ -1,15 +1,26 @@
-import { ExceptionFilter, Catch, ArgumentsHost, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
-@Catch(UnauthorizedException, ForbiddenException, TokenExpiredError, JsonWebTokenError)
+@Catch(
+  UnauthorizedException,
+  ForbiddenException,
+  TokenExpiredError,
+  JsonWebTokenError,
+)
 export class AuthExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    
+
     let status = 401;
-    let message = 'Erreur d\'authentification';
+    let message = "Erreur d'authentification";
 
     if (exception instanceof TokenExpiredError) {
       message = 'Token expiré';

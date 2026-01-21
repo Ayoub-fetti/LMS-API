@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsNumber, IsArray, Min, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsArray,
+  Min,
+  IsEnum,
+} from 'class-validator';
 import { ModuleStatus } from '../schemas/module.schema';
 
 export class UpdateModuleDto {

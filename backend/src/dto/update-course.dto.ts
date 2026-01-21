@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsNumber, IsArray, Min, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsArray,
+  Min,
+  IsEnum,
+} from 'class-validator';
 import { CourseStatus } from '../schemas/course.schema';
 
 export class UpdateCourseDto {

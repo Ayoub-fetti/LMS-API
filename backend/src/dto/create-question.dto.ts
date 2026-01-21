@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, IsArray, IsOptional, IsNumber, IsEnum } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsArray,
+  IsOptional,
+  IsNumber,
+  IsEnum,
+} from 'class-validator';
 import { QuestionType } from '../schemas/question.schema';
 
 export class CreateQuestionDto {

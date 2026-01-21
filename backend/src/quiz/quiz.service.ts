@@ -26,12 +26,14 @@ export class QuizService {
     if (!quiz) {
       throw new Error('Quiz not found');
     }
-    
-    const questions = await this.questionModel.find({ quiz: quizId }).select('-correctAnswer');
-    
+
+    const questions = await this.questionModel
+      .find({ quiz: quizId })
+      .select('-correctAnswer');
+
     return {
       ...quiz.toObject(),
-      questions
+      questions,
     };
   }
 

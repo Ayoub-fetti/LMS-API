@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Module } from '../schemas/module.schema';
@@ -14,37 +18,46 @@ export class ModuleService {
     @InjectModel(Progress.name) private progressModel: Model<Progress>,
   ) {}
 
-  async create(createModuleDto: CreateModuleDto, instructorId: string): Promise<Module> {
+  async create(
+    createModuleDto: CreateModuleDto,
+    instructorId: string,
+  ): Promise<Module> {
     await this.verifyCourseOwnership(createModuleDto.course, instructorId);
-    
-    const order = createModuleDto.order || await this.getNextOrder(createModuleDto.course);
-    
+
+    const order =
+      createModuleDto.order ||
+      (await this.getNextOrder(createModuleDto.course));
+
     const module = new this.moduleModel({
       ...createModuleDto,
-      order
+      order,
     });
-    
+
     return module.save();
   }
 
-  async update(moduleId: string, updateData: any, instructorId: string): Promise<Module> {
+  async update(
+    moduleId: string,
+    updateData: any,
+    instructorId: string,
+  ): Promise<Module> {
     const module = await this.moduleModel.findById(moduleId);
     if (!module) {
       throw new NotFoundException('Module non trouvé');
     }
-    
+
     await this.verifyCourseOwnership(module.course.toString(), instructorId);
-    
+
     const updatedModule = await this.moduleModel.findByIdAndUpdate(
-      moduleId, 
-      updateData, 
-      { new: true }
+      moduleId,
+      updateData,
+      { new: true },
     );
-    
+
     if (!updatedModule) {
       throw new NotFoundException('Module non trouvé');
     }
-    
+
     return updatedModule;
   }
 
@@ -78,9 +91,10 @@ export class ModuleService {
         // Recalculer la progression si nécessaire
         const totalModules = modules.length;
         const completedCount = progress.completedModules.length;
-        const calculatedPercentage = totalModules > 0 
-          ? Math.round((completedCount / totalModules) * 100) 
-          : 0;
+        const calculatedPercentage =
+          totalModules > 0
+            ? Math.round((completedCount / totalModules) * 100)
+            : 0;
 
         // Mettre à jour si différent
         if (progress.completionPercentage !== calculatedPercentage) {
@@ -91,10 +105,11 @@ export class ModuleService {
         return modules.map((module) => {
           const moduleObj = module.toObject();
           const isCompleted = progress.completedModules.some(
-            (id) => id.toString() === module._id.toString()
+            (id) => id.toString() === module._id.toString(),
           );
-          const isCurrent = progress.currentModule?.toString() === module._id.toString();
-          
+          const isCurrent =
+            progress.currentModule?.toString() === module._id.toString();
+
           return {
             ...moduleObj,
             isLocked: !this.isModuleAccessible(module._id.toString(), progress),
@@ -127,13 +142,16 @@ export class ModuleService {
     if (!module) {
       throw new NotFoundException('Module non trouvé');
     }
-    
+
     await this.verifyCourseOwnership(module.course.toString(), instructorId);
-    
+
     await this.moduleModel.findByIdAndDelete(moduleId);
   }
 
-  private async verifyModuleAccess(moduleId: string, studentId: string): Promise<void> {
+  private async verifyModuleAccess(
+    moduleId: string,
+    studentId: string,
+  ): Promise<void> {
     const module = await this.moduleModel.findById(moduleId);
     if (!module) {
       throw new NotFoundException('Module non trouvé');
@@ -150,7 +168,7 @@ export class ModuleService {
 
     if (!this.isModuleAccessible(moduleId, progress)) {
       throw new ForbiddenException(
-        'Ce module est verrouillé. Vous devez compléter le module précédent.'
+        'Ce module est verrouillé. Vous devez compléter le module précédent.',
       );
     }
   }
@@ -163,21 +181,28 @@ export class ModuleService {
     }
 
     // 2. Le module a déjà été complété
-    if (progress.completedModules.some((id: any) => id.toString() === moduleId)) {
+    if (
+      progress.completedModules.some((id: any) => id.toString() === moduleId)
+    ) {
       return true;
     }
 
     return false;
   }
 
-  private async verifyCourseOwnership(courseId: string, instructorId: string): Promise<void> {
+  private async verifyCourseOwnership(
+    courseId: string,
+    instructorId: string,
+  ): Promise<void> {
     const course = await this.courseModel.findById(courseId);
     if (!course) {
       throw new NotFoundException('Cours non trouvé');
     }
-    
+
     if (!course.instructor.equals(instructorId)) {
-      throw new ForbiddenException('Accès refusé - Vous n\'êtes pas le propriétaire de ce cours');
+      throw new ForbiddenException(
+        "Accès refusé - Vous n'êtes pas le propriétaire de ce cours",
+      );
     }
   }
 
@@ -185,7 +210,7 @@ export class ModuleService {
     const lastModule = await this.moduleModel
       .findOne({ course: courseId })
       .sort({ order: -1 });
-    
+
     return lastModule ? lastModule.order + 1 : 1;
   }
 }

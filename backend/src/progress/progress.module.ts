@@ -3,7 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProgressService } from './progress.service';
 import { ProgressController } from './progress.controller';
 import { Progress, ProgressSchema } from '../schemas/progress.schema';
-import { Module as ModuleSchema, ModuleSchema as ModuleSchemaDefinition } from '../schemas/module.schema';
+import {
+  Module as ModuleSchema,
+  ModuleSchema as ModuleSchemaDefinition,
+} from '../schemas/module.schema';
 import { Quiz, QuizSchema } from '../schemas/quiz.schema';
 
 @Module({

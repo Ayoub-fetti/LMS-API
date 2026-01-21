@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 export enum QuestionType {
   MULTIPLE_CHOICE = 'multiple_choice',
   TRUE_FALSE = 'true_false',
-  SHORT_ANSWER = 'short_answer'
+  SHORT_ANSWER = 'short_answer',
 }
 
 @Schema({ timestamps: true })

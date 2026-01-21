@@ -13,9 +13,10 @@ import { ProgressModule } from './progress/progress.module';
   imports: [
     MongooseModule.forRootAsync({
       useFactory: async () => {
-        const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/lms-db';
+        const uri =
+          process.env.MONGODB_URI || 'mongodb://localhost:27017/lms-db';
         Logger.log(`Connecting to MongoDB: ${uri}`, 'Database');
-        
+
         return {
           uri,
           onConnectionCreate: (connection) => {

@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Put, Patch, Body, UseGuards, Request, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Body,
+  UseGuards,
+  Request,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { CourseService } from './course.service';
 import { ProgressService } from '../progress/progress.service';
 import { CreateCourseDto } from '../dto/create-course.dto';
@@ -18,7 +29,7 @@ export class CourseController {
   @Get()
   async findPublished(
     @Query('page') page: string = '1',
-    @Query('limit') limit: string = '10'
+    @Query('limit') limit: string = '10',
   ) {
     const pageNum = Math.max(1, parseInt(page));
     const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
@@ -35,7 +46,7 @@ export class CourseController {
   @Get(':id/students/progress')
   async getStudentsProgress(
     @Param('id') courseId: string,
-    @Request() req: any
+    @Request() req: any,
   ) {
     return this.courseService.getStudentsProgress(courseId, req.user._id);
   }
@@ -45,10 +56,13 @@ export class CourseController {
   @Post(':id/enroll')
   async enroll(@Param('id') courseId: string, @Request() req: any) {
     const result = await this.courseService.enroll(courseId, req.user._id);
-    
+
     // Initialiser la progression
-    const progress = await this.progressService.initializeProgress(req.user._id, courseId);
-    
+    const progress = await this.progressService.initializeProgress(
+      req.user._id,
+      courseId,
+    );
+
     return {
       ...result,
       progress,
@@ -65,7 +79,11 @@ export class CourseController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.INSTRUCTOR)
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto, @Request() req: any) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateCourseDto: UpdateCourseDto,
+    @Request() req: any,
+  ) {
     return this.courseService.update(id, updateCourseDto, req.user._id);
   }
 

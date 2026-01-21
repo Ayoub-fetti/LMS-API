@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsString, IsOptional, IsNumber, IsArray, Min, IsMongoId } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsArray,
+  Min,
+  IsMongoId,
+} from 'class-validator';
 
 export class CreateModuleDto {
   @IsString({ message: 'Titre doit être une chaîne' })

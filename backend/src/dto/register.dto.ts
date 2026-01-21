@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Email invalide' })
@@ -19,6 +26,8 @@ export class RegisterDto {
   lastName: string;
 
   @IsOptional()
-  @IsEnum(['student', 'instructor'], { message: 'Rôle doit être student ou instructor' })
+  @IsEnum(['student', 'instructor'], {
+    message: 'Rôle doit être student ou instructor',
+  })
   role?: string = 'student';
 }

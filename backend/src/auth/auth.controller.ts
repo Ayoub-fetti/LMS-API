@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Get, Put, UseGuards, Request, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Put,
+  UseGuards,
+  Request,
+  Param,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
@@ -38,7 +47,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Put('users/:id/role')
-  async updateUserRole(@Param('id') userId: string, @Body() updateRoleDto: UpdateRoleDto) {
+  async updateUserRole(
+    @Param('id') userId: string,
+    @Body() updateRoleDto: UpdateRoleDto,
+  ) {
     return this.authService.updateUserRole(userId, updateRoleDto.role);
   }
 }

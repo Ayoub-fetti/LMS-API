@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Param, UseGuards, Request, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  Get,
+} from '@nestjs/common';
 import { QuizSubmissionService } from './quiz-submission.service';
 import { QuizService } from './quiz.service';
 import { SubmitQuizDto } from '../dto/submit-quiz.dto';
@@ -38,10 +46,10 @@ export class QuizController {
   }
 
   @Get(':id/attempts')
-  async getAttempts(
-    @Param('id') quizId: string,
-    @Request() req: any,
-  ) {
-    return this.quizSubmissionService.getAttempts(quizId, req.user._id || req.user.id);
+  async getAttempts(@Param('id') quizId: string, @Request() req: any) {
+    return this.quizSubmissionService.getAttempts(
+      quizId,
+      req.user._id || req.user.id,
+    );
   }
 }

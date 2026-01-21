@@ -5,8 +5,14 @@ import { CourseService } from './course.service';
 import { Course, CourseSchema } from '../schemas/course.schema';
 import { Enrollment, EnrollmentSchema } from '../schemas/enrollment.schema';
 import { Progress, ProgressSchema } from '../schemas/progress.schema';
-import { QuizSubmission, QuizSubmissionSchema } from '../schemas/quiz-submission.schema';
-import { Module as ModuleSchema, ModuleSchema as ModuleSchemaDefinition } from '../schemas/module.schema';
+import {
+  QuizSubmission,
+  QuizSubmissionSchema,
+} from '../schemas/quiz-submission.schema';
+import {
+  Module as ModuleSchema,
+  ModuleSchema as ModuleSchemaDefinition,
+} from '../schemas/module.schema';
 import { ProgressModule } from '../progress/progress.module';
 
 @Module({

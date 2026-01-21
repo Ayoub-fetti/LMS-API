@@ -6,7 +6,6 @@ import { LoginDto } from '../dto/login.dto';
 import { UserRole } from '../enums/user-role.enum';
 import { User } from '../schemas/user.schema';
 
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -18,7 +17,7 @@ export class AuthService {
     const user = await this.userService.register(registerDto);
     const token = this.generateToken(user);
     const { password, ...result } = user.toObject();
-    
+
     return {
       message: 'Utilisateur créé avec succès',
       user: result,
@@ -30,7 +29,7 @@ export class AuthService {
     const user = await this.userService.login(loginDto);
     const token = this.generateToken(user);
     const { password, ...result } = user.toObject();
-    
+
     return {
       message: 'Connexion réussie',
       user: result,
@@ -60,5 +59,4 @@ export class AuthService {
   async updateUserRole(userId: string, role: UserRole): Promise<User | null> {
     return this.userService.updateRole(userId, role);
   }
-
 }

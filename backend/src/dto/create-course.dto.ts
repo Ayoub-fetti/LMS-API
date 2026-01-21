@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, IsOptional, IsNumber, IsArray, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsArray,
+  Min,
+} from 'class-validator';
 
 export class CreateCourseDto {
   @IsString({ message: 'Titre doit être une chaîne' })

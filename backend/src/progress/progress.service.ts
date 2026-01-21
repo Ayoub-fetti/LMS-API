@@ -13,7 +13,10 @@ export class ProgressService {
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
   ) {}
 
-  async initializeProgress(studentId: string, courseId: string): Promise<Progress> {
+  async initializeProgress(
+    studentId: string,
+    courseId: string,
+  ): Promise<Progress> {
     // Vérifier si une progression existe déjà
     const existingProgress = await this.progressModel.findOne({
       student: studentId,
@@ -44,7 +47,10 @@ export class ProgressService {
     return progress.save();
   }
 
-  async getProgress(studentId: string, courseId: string): Promise<Progress | null> {
+  async getProgress(
+    studentId: string,
+    courseId: string,
+  ): Promise<Progress | null> {
     const progress = await this.progressModel
       .findOne({ student: studentId, course: courseId })
       .populate('currentModule')
@@ -83,8 +89,11 @@ export class ProgressService {
 
     // Calculer le temps estimé restant
     const estimatedTimeRemaining = allModules
-      .filter(module => 
-        !progress.completedModules.some(id => id.toString() === module._id.toString())
+      .filter(
+        (module) =>
+          !progress.completedModules.some(
+            (id) => id.toString() === module._id.toString(),
+          ),
       )
       .reduce((total, module) => total + (module.duration || 0), 0);
 
@@ -103,13 +112,13 @@ export class ProgressService {
         estimatedTimeRemaining,
         lastAccessedAt: progress.lastAccessedAt,
       },
-      modulesList: allModules.map(module => ({
+      modulesList: allModules.map((module) => ({
         _id: module._id,
         title: module.title,
         order: module.order,
         duration: module.duration,
         isCompleted: progress.completedModules.some(
-          id => id.toString() === module._id.toString()
+          (id) => id.toString() === module._id.toString(),
         ),
         isCurrent: progress.currentModule?.toString() === module._id.toString(),
       })),
@@ -122,15 +131,20 @@ export class ProgressService {
       .populate('currentModule');
 
     if (!progress) {
-      throw new NotFoundException('Progression non trouvée. Veuillez vous inscrire au cours.');
+      throw new NotFoundException(
+        'Progression non trouvée. Veuillez vous inscrire au cours.',
+      );
     }
 
     // Si aucun module actuel défini, trouver le prochain module non complété
     if (!progress.currentModule) {
-      const nextModule = await this.findNextIncompleteModule(progress, courseId);
-      
+      const nextModule = await this.findNextIncompleteModule(
+        progress,
+        courseId,
+      );
+
       if (nextModule) {
-        progress.currentModule = nextModule._id as any;
+        progress.currentModule = nextModule._id;
         progress.lastAccessedAt = new Date();
         await progress.save();
       }
@@ -148,7 +162,7 @@ export class ProgressService {
         completedModules: progress.completedModules.length,
         lastAccessedAt: progress.lastAccessedAt,
       },
-      resumeUrl: progress.currentModule 
+      resumeUrl: progress.currentModule
         ? `/courses/${courseId}/modules/${progress.currentModule._id}`
         : `/courses/${courseId}`,
     };
@@ -190,7 +204,7 @@ export class ProgressService {
 
     // Vérifier si le module a un quiz associé
     const quiz = await this.quizModel.findOne({ module: moduleId });
-    
+
     // Ajouter le module aux modules complétés s'il n'y est pas déjà
     if (!progress.completedModules.includes(moduleId as any)) {
       progress.completedModules.push(moduleId as any);
@@ -278,7 +292,7 @@ export class ProgressService {
       .populate('currentModule', 'title order')
       .sort({ lastAccessedAt: -1 });
 
-    return allProgress.map(progress => ({
+    return allProgress.map((progress) => ({
       courseId: progress.course,
       currentModule: progress.currentModule,
       completionPercentage: progress.completionPercentage,
@@ -289,14 +303,20 @@ export class ProgressService {
     }));
   }
 
-  private async findNextIncompleteModule(progress: Progress, courseId: string): Promise<any> {
+  private async findNextIncompleteModule(
+    progress: Progress,
+    courseId: string,
+  ): Promise<any> {
     // Trouver le premier module non complété
     const allModules = await this.moduleModel
       .find({ course: courseId, status: { $ne: 'archived' } })
       .sort({ order: 1 });
 
-    return allModules.find(module => 
-      !progress.completedModules.some(id => id.toString() === module._id.toString())
+    return allModules.find(
+      (module) =>
+        !progress.completedModules.some(
+          (id) => id.toString() === module._id.toString(),
+        ),
     );
   }
 
@@ -305,9 +325,9 @@ export class ProgressService {
     courseId: string,
   ): Promise<void> {
     // Compter le nombre total de modules du cours (non archivés)
-    const totalModules = await this.moduleModel.countDocuments({ 
+    const totalModules = await this.moduleModel.countDocuments({
       course: courseId,
-      status: { $ne: 'archived' }
+      status: { $ne: 'archived' },
     });
 
     if (totalModules === 0) {
@@ -317,8 +337,10 @@ export class ProgressService {
 
     // Calculer le pourcentage basé sur les modules complétés
     const completedCount = progress.completedModules.length;
-    progress.completionPercentage = Math.round((completedCount / totalModules) * 100);
-    
+    progress.completionPercentage = Math.round(
+      (completedCount / totalModules) * 100,
+    );
+
     // S'assurer que le pourcentage ne dépasse pas 100
     if (progress.completionPercentage > 100) {
       progress.completionPercentage = 100;

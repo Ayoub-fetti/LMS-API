@@ -6,7 +6,10 @@ import { QuizSubmissionService } from './quiz-submission.service';
 import { QuizService } from './quiz.service';
 import { QuestionService } from './question.service';
 import { Quiz, QuizSchema } from '../schemas/quiz.schema';
-import { QuizSubmission, QuizSubmissionSchema } from '../schemas/quiz-submission.schema';
+import {
+  QuizSubmission,
+  QuizSubmissionSchema,
+} from '../schemas/quiz-submission.schema';
 import { Question, QuestionSchema } from '../schemas/question.schema';
 import { ProgressModule } from '../progress/progress.module';
 

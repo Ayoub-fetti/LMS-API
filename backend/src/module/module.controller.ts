@@ -1,4 +1,13 @@
-import { Controller, Post, Put, Get, Body, UseGuards, Request, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Put,
+  Get,
+  Body,
+  UseGuards,
+  Request,
+  Param,
+} from '@nestjs/common';
 import { ModuleService } from './module.service';
 import { CreateModuleDto } from '../dto/create-module.dto';
 import { UpdateModuleDto } from '../dto/update-module.dto';
@@ -38,7 +47,11 @@ export class ModuleController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.INSTRUCTOR)
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateModuleDto: UpdateModuleDto, @Request() req: any) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateModuleDto: UpdateModuleDto,
+    @Request() req: any,
+  ) {
     return this.moduleService.update(id, updateModuleDto, req.user._id);
   }
 }

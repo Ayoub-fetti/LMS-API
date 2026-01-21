@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 export enum CourseStatus {
   DRAFT = 'draft',
   PUBLISHED = 'published',
-  ARCHIVED = 'archived'
+  ARCHIVED = 'archived',
 }
 
 @Schema({ timestamps: true })
