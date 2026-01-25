@@ -165,6 +165,7 @@ export class CourseService {
     // Récupérer la progression de chaque apprenant
     const studentsProgress = await Promise.all(
       enrollments.map(async (enrollment) => {
+        const student = enrollment.student as any;
         const studentId = enrollment.student._id.toString();
 
         // Progression générale
@@ -232,23 +233,25 @@ export class CourseService {
         const passedQuizzes = quizStats.filter((q) => q.passed).length;
         const totalQuizzes = progress?.completedQuizzes.length || 0;
 
+        const currentModule = progress?.currentModule as any;
+
         return {
           student: {
-            id: enrollment.student._id,
-            firstName: enrollment.student.firstName,
-            lastName: enrollment.student.lastName,
-            email: enrollment.student.email,
+            id: student._id,
+            firstName: student.firstName,
+            lastName: student.lastName,
+            email: student.email,
             enrolledAt: enrollment.enrolledAt,
           },
           progress: {
             completionPercentage: progress?.completionPercentage || 0,
             completedModules: progress?.completedModules.length || 0,
             totalModules: modules.length,
-            currentModule: progress?.currentModule
+            currentModule: currentModule
               ? {
-                  id: progress.currentModule._id,
-                  title: progress.currentModule.title,
-                  order: progress.currentModule.order,
+                  id: currentModule._id,
+                  title: currentModule.title,
+                  order: currentModule.order,
                 }
               : null,
             lastAccessedAt: progress?.lastAccessedAt,

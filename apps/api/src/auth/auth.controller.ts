@@ -34,14 +34,14 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMe(@Request() req) {
+  getMe(@Request() req: any) {
     const { password, ...user } = req.user.toObject();
     return user;
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('me')
-  async updateMe(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+  async updateMe(@Request() req: any, @Body() updateProfileDto: UpdateProfileDto) {
     return this.authService.updateProfile(req.user._id, updateProfileDto);
   }
   @UseGuards(JwtAuthGuard, RolesGuard)
