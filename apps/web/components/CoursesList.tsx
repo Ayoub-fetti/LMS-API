@@ -20,8 +20,8 @@ export default function CoursesList() {
       setIsLoading(true);
       try {
         const response = await api.getCourses(page, 9);
-        setCourses(response.data);
-        setTotalPages(Math.ceil(response.total / 9));
+        setCourses(response.courses || []);
+        setTotalPages(Math.ceil(response.pagination.totalPages / 9));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load courses');
       } finally {

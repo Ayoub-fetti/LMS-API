@@ -38,6 +38,9 @@ export class CourseService {
       this.courseModel.countDocuments({ status: CourseStatus.PUBLISHED }),
     ]);
 
+      console.log('Courses found:', courses.map(c => ({ id: c._id, title: c.title, status: c.status })));
+
+
     return {
       courses,
       pagination: {

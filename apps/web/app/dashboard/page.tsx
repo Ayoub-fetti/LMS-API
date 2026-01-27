@@ -30,7 +30,7 @@ function DashboardContent() {
           // Fetch all courses (in a real app, you'd have an endpoint for instructor's courses)
           const response = await api.getCourses(1, 100);
           // Filter courses by current instructor
-          const instructorCourses = response.data.filter(
+          const instructorCourses = response.courses.filter(
             (course) => course.instructor?._id === user._id
           );
           setCourses(instructorCourses);
@@ -155,11 +155,11 @@ function DashboardContent() {
                         <span>{course.enrollmentCount || 0} students</span>
                         <span>•</span>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          course.isPublished
+                          course.status === 'published'
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                             : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                         }`}>
-                          {course.isPublished ? 'Published' : 'Draft'}
+                          {course.status ? 'published' : 'draft'}
                         </span>
                       </div>
                     </div>

@@ -21,7 +21,8 @@ export interface RegisterDto {
 export interface User {
   _id: string;
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   role: 'student' | 'instructor' | 'admin';
   createdAt: string;
   updatedAt: string;
@@ -40,6 +41,9 @@ export interface Course {
   title: string;
   description: string;
   instructor: User;
+  status: 'draft' | 'published' | 'archived';
+  duration: number;
+  tags: string[];
   modules: Module[];
   isPublished: boolean;
   enrollmentCount: number;
@@ -270,8 +274,21 @@ class ApiClient {
    * Get all published courses with pagination
    * GET /api/v1/courses
    */
-  async getCourses(page: number = 1, limit: number = 10): Promise<{ data: Course[]; total: number }> {
-    return this.request(`/courses?page=${page}&limit=${limit}`);
+  async getCourses(page: number = 1, limit: number = 10): Promise<{ 
+      courses: Course[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number
+        totalPages: number;
+      };
+   }> {
+    const response = await this.request(`/courses?page=${page}&limit=${limit}`);
+    
+    // Add debugging
+    console.log('API Response:', response);
+    
+    return response;
   }
 
   /**

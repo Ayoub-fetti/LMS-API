@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter} from 'next/navigation';
 import { api, User, LoginDto, RegisterDto, AuthResponse } from '@/lib/api';
 
 // ============================================
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   /**
    * Check authentication status on mount
@@ -49,6 +51,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
   }, []);
 
+   /**
+   * Get redirect path based on user role
+   */
+
+  const getRedirectPath = (userRole: string) : string => {
+
+    const normalizedRole = userRole?.toLowerCase() || '';
+    switch (normalizedRole) {
+      case 'instructor':
+        return '/dashboard';
+      case 'admin':
+        return '/admin/dashboard';
+      case 'student':
+        return '/courses';
+    }
+  }
+
   /**
    * Login user with email and password
    * @param data - Login credentials
@@ -56,6 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (data: LoginDto) => {
     const response = await api.login(data);
     setUser(response.user);
+
+    const redirectPath = getRedirectPath(response.user.role);
+    router.push(redirectPath);
   };
 
   /**
@@ -65,6 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterDto) => {
     const response = await api.register(data);
     setUser(response.user);
+
+    router.push('/courses');
   };
 
   /**
