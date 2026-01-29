@@ -14,7 +14,7 @@ export default function Navbar() {
           <div className="flex">
             <Link href="/" className="flex-shrink-0 flex items-center">
               <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                LMS Platform
+                LMS
               </span>
             </Link>
             

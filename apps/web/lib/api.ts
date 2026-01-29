@@ -1,12 +1,8 @@
-// ============================================
 // API Configuration and Types
-// ============================================
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
-// ============================================
 // Auth Types
-// ============================================
 export interface LoginDto {
   email: string;
   password: string;
@@ -15,7 +11,8 @@ export interface LoginDto {
 export interface RegisterDto {
   email: string;
   password: string;
-  name: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface User {
@@ -24,6 +21,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: 'student' | 'instructor' | 'admin';
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,9 +31,7 @@ export interface AuthResponse {
   user: User;
 }
 
-// ============================================
 // Course Types
-// ============================================
 export interface Course {
   _id: string;
   title: string;
@@ -45,8 +41,8 @@ export interface Course {
   duration: number;
   tags: string[];
   modules: Module[];
-  isPublished: boolean;
-  enrollmentCount: number;
+  // isPublished: boolean;
+  // enrollmentCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,23 +50,29 @@ export interface Course {
 export interface CreateCourseDto {
   title: string;
   description: string;
+  duration?: number;
+  tags?: string[];
 }
 
 export interface UpdateCourseDto {
   title?: string;
   description?: string;
+  duration?: number;
+  tags?: string[];
+  status?: 'draft' | 'published' | 'archived';
 }
 
-// ============================================
 // Module Types
-// ============================================
 export interface Module {
   _id: string;
   title: string;
   description: string;
   courseId: string;
   order: number;
+  status: 'draft' |'published' | 'archived';
+  duration: number;
   quizzes: Quiz[];
+  objectives: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -79,21 +81,28 @@ export interface CreateModuleDto {
   title: string;
   description: string;
   courseId: string;
+  order?: number;
+  duration?: number;
+  objectives?: string[];
 }
 
 export interface UpdateModuleDto {
   title?: string;
   description?: string;
+  order?: number;
+  status?: 'draft' |'published' | 'archived';
+  duration?: number;
+  objectives?: string[];
+  
 }
 
-// ============================================
 // Quiz Types
-// ============================================
 export interface Quiz {
   _id: string;
   title: string;
   moduleId: string;
   questions: Question[];
+  timeLimit: number;
   passingScore: number;
   createdAt: string;
   updatedAt: string;
@@ -102,18 +111,24 @@ export interface Quiz {
 export interface Question {
   _id: string;
   text: string;
+  type: 'multiple_choice' | 'true_false' | 'short_answer';
   options: string[];
-  correctAnswer: number;
+  correctAnswer: string[];
+  points: number;
+  quizId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateQuizDto {
   title: string;
   moduleId: string;
-  passingScore: number;
+  timeLimit?: number;
+  passingScore?: number;
 }
 
 export interface SubmitQuizDto {
-  answers: { questionId: string; selectedAnswer: number }[];
+  answers: { questionId: string; answer: string[] }[];
 }
 
 export interface QuizSubmission {
@@ -122,30 +137,28 @@ export interface QuizSubmission {
   userId: string;
   score: number;
   passed: boolean;
-  answers: { questionId: string; selectedAnswer: number; isCorrect: boolean }[];
-  createdAt: string;
+  answers: { questionId: string; answer: string[]; }[];
+  submittedAt: Date;
+  attemptNumber: number;
 }
 
-// ============================================
 // Progress Types
-// ============================================
 export interface Progress {
   _id: string;
   userId: string;
   courseId: string;
   completedModules: string[];
-  currentModule: string;
-  currentQuiz: string;
+  currentModule: string[];
+  completedQuizzes: string[];
+  completionPercentage: number;
   quizAttempts: QuizSubmission[];
-  timeSpent: number;
-  lastAccessed: string;
+  totalTimeSpent: number;
+  lastAccessedAt: Date;
   createdAt: string;
   updatedAt: string;
 }
 
-// ============================================
 // API Client
-// ============================================
 
 class ApiClient {
   private baseUrl: string;
@@ -208,9 +221,7 @@ class ApiClient {
     return response.json();
   }
 
-  // ============================================
   // Auth Endpoints
-  // ============================================
 
   /**
    * Register a new user
@@ -266,9 +277,7 @@ class ApiClient {
     });
   }
 
-  // ============================================
   // Course Endpoints
-  // ============================================
 
   /**
    * Get all published courses with pagination
@@ -285,10 +294,9 @@ class ApiClient {
    }> {
     const response = await this.request(`/courses?page=${page}&limit=${limit}`);
     
-    // Add debugging
     console.log('API Response:', response);
-    
     return response;
+    
   }
 
   /**
@@ -359,9 +367,7 @@ class ApiClient {
     });
   }
 
-  // ============================================
   // Module Endpoints
-  // ============================================
 
   /**
    * Get modules by course ID
@@ -401,9 +407,7 @@ class ApiClient {
     });
   }
 
-  // ============================================
   // Quiz Endpoints
-  // ============================================
 
   /**
    * Create a new quiz (Instructor only)
@@ -443,9 +447,7 @@ class ApiClient {
     return this.request(`/quiz/${id}/attempts`);
   }
 
-  // ============================================
   // Question Endpoints
-  // ============================================
 
   /**
    * Create a new question (Instructor only)
@@ -463,9 +465,7 @@ class ApiClient {
     });
   }
 
-  // ============================================
   // Progress Endpoints
-  // ============================================
 
   /**
    * Get all courses progress for current user
