@@ -1,0 +1,11 @@
+{
+  "name": "lms",
+  "version": "1.0.0",
+  "scripts": {
+    "docker:up": "docker-compose -f apps/docker-compose.yml up",
+    "docker:up:build": "docker-compose -f apps/docker-compose.yml up --build",
+    "docker:down": "docker-compose -f apps/docker-compose.yml down",
+    "docker:down:volumes": "docker-compose -f apps/docker-compose.yml down -v",
+    "docker:logs": "docker-compose -f apps/docker-compose.yml logs -f"
+  }
+}
