@@ -58,7 +58,7 @@ export class QuizAttemptsService {
     });
     await attempt.save();
 
-    let moduleProgress = enrollment.moduleProgress.find(
+    const moduleProgress = enrollment.moduleProgress.find(
       (mp) => mp.moduleId.toString() === quiz.moduleId._id.toString(),
     );
 
@@ -67,11 +67,11 @@ export class QuizAttemptsService {
       enrollment.moduleProgress.push({
         moduleId: quiz.moduleId,
         completed: false,
-        quizAttemptIds: [attempt._id as Types.ObjectId],
+        quizAttemptIds: [attempt._id],
       });
     } else {
       // If it exists, just add the new attempt ID
-      moduleProgress.quizAttemptIds.push(attempt._id as Types.ObjectId);
+      moduleProgress.quizAttemptIds.push(attempt._id);
     }
 
     await enrollment.save();

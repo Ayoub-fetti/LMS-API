@@ -98,9 +98,7 @@ describe('QuizzesService', () => {
         questions: [{ score: 10 }],
       };
 
-      jest
-        .spyOn(service, 'findOne')
-        .mockResolvedValue(mockQuizWithScore as any);
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockQuizWithScore);
 
       // Attempt to set passingScore to 15
       const updateDto = { passingScore: 15 };
@@ -117,9 +115,7 @@ describe('QuizzesService', () => {
         set: jest.fn().mockReturnThis(),
         save: jest.fn().mockResolvedValue({ ...mockQuiz, passingScore: 8 }),
       };
-      jest
-        .spyOn(service, 'findOne')
-        .mockResolvedValue(mockQuizWithScore as any);
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockQuizWithScore);
 
       const result = await service.update(quizId, { passingScore: 8 });
 
@@ -297,7 +293,7 @@ describe('QuizzesService', () => {
           .fn()
           .mockResolvedValue({ ...mockQuiz, status: QuizStatus.PUBLISHED }),
       };
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockQuizWithSave as any);
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockQuizWithSave);
 
       const result = await service.changeQuizStatus(
         quizId,
@@ -325,7 +321,7 @@ describe('QuizzesService', () => {
         ...mockQuiz,
         save: jest.fn().mockRejectedValue(new Error('Database error')),
       };
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockQuizWithSave as any);
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockQuizWithSave);
 
       await expect(
         service.changeQuizStatus(quizId, QuizStatus.PUBLISHED),
