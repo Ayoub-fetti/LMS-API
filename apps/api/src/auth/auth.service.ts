@@ -1,62 +1,47 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../user/user.service';
-import { RegisterDto } from '../dto/register.dto';
-import { LoginDto } from '../dto/login.dto';
-import { UserRole } from '../enums/user-role.enum';
-import { User } from '../schemas/user.schema';
+import * as bcrypt from 'bcrypt';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/user.schema';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: string;
+  fullName: string;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
+    private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
-  async register(registerDto: RegisterDto) {
-    const user = await this.userService.register(registerDto);
-    const token = this.generateToken(user);
-    const { password, ...result } = user.toObject();
+  async validateUser(email: string, password: string): Promise<{ user?: User; error?: string }> {
+    const user = await this.usersService.findByEmail(email);
 
-    return {
-      message: 'Utilisateur créé avec succès',
-      user: result,
-      access_token: token,
-    };
+    if (!user) {
+      return { error: 'Email not found' };
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return { error: 'Wrong password' };
+    }
+
+    return { user };
   }
 
-  async login(loginDto: LoginDto) {
-    const user = await this.userService.login(loginDto);
-    const token = this.generateToken(user);
-    const { password, ...result } = user.toObject();
-
-    return {
-      message: 'Connexion réussie',
-      user: result,
-      access_token: token,
-    };
-  }
-
-  private generateToken(user: any): string {
-    const payload = {
-      sub: user._id,
+  login(user: User) {
+    const payload: JwtPayload = {
+      sub: user._id.toString(),
       email: user.email,
       role: user.role,
+      fullName: user.fullName,
     };
-    return this.jwtService.sign(payload);
-  }
-  async updateProfile(userId: string, updateProfileDto: any) {
-    const user = await this.userService.updateProfile(userId, updateProfileDto);
-    if (!user) {
-      throw new UnauthorizedException('Utilisateur introuvable');
-    }
-    const { password, ...result } = user.toObject();
     return {
-      message: 'Profil mis à jour avec succès',
-      user: result,
+      access_token: this.jwtService.sign(payload),
     };
-  }
-  async updateUserRole(userId: string, role: UserRole): Promise<User | null> {
-    return this.userService.updateRole(userId, role);
   }
 }

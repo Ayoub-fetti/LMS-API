@@ -1,27 +1,36 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserService } from '../user/user.service';
+import { ConfigService } from '@nestjs/config';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: string;
+  fullName: string;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private userService: UserService) {
+  constructor(configService: ConfigService) {
+    const secret = configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error('JWT_SECRET is not configured');
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET || 'fallback-secret',
-      ignoreExpiration: false, // check automatiquement l'expiration
+      ignoreExpiration: false,
+      secretOrKey: secret,
     });
   }
 
-  async validate(payload: any) {
-    if (payload.exp && Date.now() >= payload.exp * 1000) {
-      throw new UnauthorizedException('Token expiré');
-    }
-
-    const user = await this.userService.findById(payload.sub);
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException('Utilisateur introuvable ou inactif');
-    }
-    return user;
+  async validate(payload: JwtPayload) {
+    // This return value is attached to Request.user
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      role: payload.role,
+      fullName: payload.fullName,
+    };
   }
 }

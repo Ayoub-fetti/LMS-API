@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
+import { AuthProvider } from "@/providers/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LMS",
-  description: "Learning Management System",
+  title: "LMS Platform",
+  description:
+    "A modern learning management system for learners and instructors, built with Next.js.",
 };
 
 export default function RootLayout({

@@ -2,55 +2,54 @@ import {
   Controller,
   Post,
   Body,
+  UnauthorizedException,
   Get,
-  Put,
+  Req,
   UseGuards,
-  Request,
-  Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto } from '../dto/register.dto';
-import { LoginDto } from '../dto/login.dto';
-import { UpdateProfileDto } from '../dto/update-profile.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { UpdateRoleDto } from '../dto/update-role.dto';
-import { RolesGuard } from './role.guard';
-import { Roles } from './roles.decorator';
-import { UserRole } from '../enums/user-role.enum';
+import { UsersService } from '../users/users.service';
+import { JwtAuthGuard } from './jwt.guard';
+import { Role } from 'src/roles/role.enum';
 
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: Role;
+  fullName: string;
+}
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
-
-  @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
-  }
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService,
+  ) {}
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() body: { email: string; password: string }) {
+    const result = await this.authService.validateUser(
+      body.email,
+      body.password,
+    );
+
+    if (result.error) {
+      throw new UnauthorizedException(result.error);
+    }
+
+    // result.user is guaranteed to exist
+    return this.authService.login(result.user!);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMe(@Request() req: any) {
-    const { password, ...user } = req.user.toObject();
-    return user;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put('me')
-  async updateMe(@Request() req: any, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.authService.updateProfile(req.user._id, updateProfileDto);
-  }
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @Put('users/:id/role')
-  async updateUserRole(
-    @Param('id') userId: string,
-    @Body() updateRoleDto: UpdateRoleDto,
+  async me(
+    @Req()
+    req: {
+      user: { userId: string; email: string; role: string; fullName: string };
+    },
   ) {
-    return this.authService.updateUserRole(userId, updateRoleDto.role);
+    // Fetch fresh user data from database instead of using JWT payload
+    const user = await this.usersService.getMe(req.user.userId);
+    return user;
   }
 }

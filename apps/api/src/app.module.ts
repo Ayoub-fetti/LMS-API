@@ -1,39 +1,47 @@
-import { Module, Logger } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { UsersModule } from './users/users.module';
+import { CoursesModule } from './courses/courses.module';
+import { CourseModulesModule } from './course-modules/course-modules.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { QuizzesModule } from './quizzes/quizzes.module';
+import { SeederModule } from './seeders/seeder.module';
+import { TrainerModule } from './trainer/trainer.module';
 import { AuthModule } from './auth/auth.module';
-import { CourseModule } from './course/course.module';
-import { ModuleModule } from './module/module.module';
-import { QuizModule } from './quiz/quiz.module';
-import { ProgressModule } from './progress/progress.module';
-
 @Module({
   imports: [
-    MongooseModule.forRootAsync({
-      useFactory: async () => {
-        const uri =
-          process.env.MONGODB_URI || 'mongodb://localhost:27017/lms-db';
-        Logger.log(`Connecting to MongoDB: ${uri}`, 'Database');
-
-        return {
-          uri,
-          onConnectionCreate: (connection) => {
-            Logger.log('MongoDB connected successfully', 'Database');
-            return connection;
-          },
-        };
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'local'}`, // load correct .env
+      validate: (env) => {
+        if (!env.JWT_SECRET) throw new Error('JWT_SECRET missing');
+        if (!env.MONGO_URI) throw new Error('MONGO_URI missing');
+        return env;
       },
     }),
-    UserModule,
+
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URI'),
+      }),
+      inject: [ConfigService],
+    }),
+
     AuthModule,
-    CourseModule,
-    ModuleModule,
-    QuizModule,
-    ProgressModule,
+    UsersModule,
+    CoursesModule,
+    CourseModulesModule,
+    EnrollmentsModule,
+    QuizzesModule,
+    SeederModule,
+    TrainerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+
+export class AppModule { }
