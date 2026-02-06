@@ -32,7 +32,6 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-
   // ENABLE DTO VALIDATION
   app.useGlobalPipes(
     new ValidationPipe({
@@ -47,7 +46,6 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-
   // get UsersService
   const usersService = app.get(UsersService);
   // seed admin once
@@ -55,7 +53,7 @@ async function bootstrap() {
 
   const PORT = process.env.PORT;
   await app.listen(PORT || 3001);
-  console.log('env',process.env.NODE_ENV );
+  console.log('env', process.env.NODE_ENV);
 
   console.log('Using env file:', `.env.${process.env.NODE_ENV || 'local'}`);
   console.log(`🚀 API running on http://localhost:${PORT}`);

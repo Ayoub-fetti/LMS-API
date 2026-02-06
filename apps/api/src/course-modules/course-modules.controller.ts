@@ -60,12 +60,12 @@ export class CourseModulesController {
         destination: (req, file, callback) => {
           const isPdf = file.mimetype === 'application/pdf';
           const dest = isPdf ? './uploads/pdfs' : './uploads/videos';
-          
+
           // Create directory if it doesn't exist
           if (!existsSync(dest)) {
             mkdirSync(dest, { recursive: true });
           }
-          
+
           callback(null, dest);
         },
         filename: (req, file, callback) => {
@@ -126,12 +126,12 @@ export class CourseModulesController {
           }
           const isPdf = file.mimetype === 'application/pdf';
           const dest = isPdf ? './uploads/pdfs' : './uploads/videos';
-          
+
           // Create directory if it doesn't exist
           if (!existsSync(dest)) {
             mkdirSync(dest, { recursive: true });
           }
-          
+
           callback(null, dest);
         },
         filename: (req, file, callback) => {

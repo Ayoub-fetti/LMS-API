@@ -220,9 +220,11 @@ export class EnrollmentsService {
     }
 
     // 3. Calculate overall progress
-    const totalModules = await this.moduleModel.countDocuments({
-      courseId: new Types.ObjectId(courseId),
-    }).exec();
+    const totalModules = await this.moduleModel
+      .countDocuments({
+        courseId: new Types.ObjectId(courseId),
+      })
+      .exec();
 
     if (totalModules > 0) {
       const completedModules = enrollment.moduleProgress.filter(
