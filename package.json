@@ -2,10 +2,10 @@
   "name": "lms",
   "version": "1.0.0",
   "scripts": {
-    "docker:up": "docker-compose -f apps/docker-compose.yml up",
-    "docker:up:build": "docker-compose -f apps/docker-compose.yml up --build",
-    "docker:down": "docker-compose -f apps/docker-compose.yml down",
-    "docker:down:volumes": "docker-compose -f apps/docker-compose.yml down -v",
-    "docker:logs": "docker-compose -f apps/docker-compose.yml logs -f"
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:clean": "docker compose down -v --remove-orphans"
   }
 }
