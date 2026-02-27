@@ -1,10 +1,9 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   experimental: {
-    turbo: {
-      root: __dirname,
-    },
+    // Remove any invalid experimental features
   },
 };
 

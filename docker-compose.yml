@@ -1,0 +1,85 @@
+name: lms
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: lms-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: lms_user
+      MONGO_INITDB_ROOT_PASSWORD: lms_password
+      MONGO_INITDB_DATABASE: lms_db
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27018:27017"
+    networks:
+      - lms-network
+    restart: unless-stopped
+
+  # Redis for caching/sessions
+  redis:
+    image: redis:7-alpine
+    container_name: lms-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - lms-network
+    restart: unless-stopped
+
+  # API Service (NestJS Backend)
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: dockerfile
+    container_name: lms-api
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://lms_user:lms_password@mongodb:27017/lms_db?authSource=admin
+      - JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
+      - PORT=3001
+    env_file:
+      - ./apps/api/.env.local
+    volumes:
+      - ./apps/api/src:/app/src
+      - ./apps/api/uploads:/app/uploads
+      - ./apps/api/test:/app/test
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - lms-network
+    restart: unless-stopped
+
+  # Web Service (Next.js Frontend)
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: dockerfile
+    container_name: lms-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    env_file:
+      - ./apps/web/.env
+    volumes:
+      - ./apps/web/app:/app/app
+      - ./apps/web/components:/app/components
+      - ./apps/web/lib:/app/lib
+      - ./apps/web/providers:/app/providers
+      - ./apps/web/types:/app/types
+    depends_on:
+      - api
+    networks:
+      - lms-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+
+networks:
+  lms-network:
+    driver: bridge
