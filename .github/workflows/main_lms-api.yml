@@ -1,4 +1,4 @@
-name: Build and deploy NestJS API to Azure Web App - lms-api
+name: Build and deploy Node.js app to Azure Web App
 
 on:
   push:
@@ -9,59 +9,55 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
-      - name: Install & Build API
-        run: |
-          cd apps/api
-          npm install
-          npm run build
+      # Install root dependencies
+      - name: Install root dependencies
+        run: npm install
 
-      # optional: run tests if you have them
-      #- name: Run tests
-      #  run: |
-      #    cd apps/api
-      #    npm run test
+      # Install and build the API
+      - name: Install API dependencies
+        run: cd apps/api && npm install
 
-      - name: Upload artifact for deployment
+      - name: Build API
+        run: cd apps/api && npm run build
+
+      # Upload the entire repo (with built dist/)
+      - name: Zip artifact for deployment
+        run: zip -r release.zip . -x ".git/*" "apps/web/*" ".github/*"
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: api-artifact
-          path: apps/api/dist
+          name: node-app
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    permissions:
-      id-token: write
-      contents: read
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: api-artifact
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5E07153E9FD94962BBB8237F51C70793 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9C577F5E81934CB3B5F5C82F071D4485 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3BC1FC95176F48DFA8C635F35F0894C7 }}
+          name: node-app
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Unzip artifact
+        run: unzip release.zip
+
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'lms-api'
+          app-name: 'lms-api'  # your app name
           slot-name: 'Production'
-          package: apps/api
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          package: .
