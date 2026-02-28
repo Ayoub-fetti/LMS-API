@@ -26,14 +26,14 @@ async function bootstrap() {
     mkdirSync(videosDir, { recursive: true });
   }
 
-  // Enable CORS with credentials
+  // Enable CORS
   app.enableCors({
-    origin: 'http://localhost:3000', // Next.js frontend URL
+    origin: true, // allow all origins for Azure (safer for deployment)
+    credentials: true,
   });
 
   app.setGlobalPrefix('api');
 
-  // ENABLE DTO VALIDATION
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -42,35 +42,32 @@ async function bootstrap() {
     }),
   );
 
-  // Serve static files (uploaded PDFs)
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
 
-  // get UsersService and DatabaseSeeder
-  const usersService = app.get(UsersService);
-  const databaseSeeder = app.get(DatabaseSeeder);
+  // 🔥 VERY IMPORTANT FOR AZURE
+  const PORT = process.env.PORT || 8000;
 
-  // seed admin once
-  await seedAdmin(usersService);
+  // 🚀 Start server FIRST
+  await app.listen(PORT, '0.0.0.0');
+  console.log(`🚀 API running on port ${PORT}`);
+  console.log('Environment:', process.env.NODE_ENV);
 
-  // Seed database if in production and database is empty
-  if (process.env.NODE_ENV === 'production') {
-    try {
+  // 🛢 Run seeding AFTER server is running
+  try {
+    const usersService = app.get(UsersService);
+    const databaseSeeder = app.get(DatabaseSeeder);
+
+    await seedAdmin(usersService);
+
+    if (process.env.NODE_ENV === 'production') {
       await databaseSeeder.seed();
       console.log('✅ Database seeding completed');
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error occurred';
-      console.log('⚠️  Database seeding skipped or failed:', errorMessage);
     }
+  } catch (error) {
+    console.error('⚠️ Seeding skipped or failed:', error);
   }
-
-  const PORT = process.env.PORT;
-  await app.listen(PORT, '0.0.0.0');
-  console.log('env', process.env.NODE_ENV);
-  console.log('Using env file:', `.env.${process.env.NODE_ENV || 'local'}`);
-  console.log(`🚀 API running on http://localhost:${PORT}`);
 }
 
 bootstrap();

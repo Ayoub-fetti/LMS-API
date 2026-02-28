@@ -5,21 +5,20 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies (including dev for build)
 RUN npm ci
 
 # Copy source code
 COPY . .
-COPY .env.production ./
 
-# Create uploads directories
-RUN mkdir -p uploads/pdfs uploads/videos
+# Build the NestJS app
+RUN npm run build
 
-# Build the application (if you have a build script)
-RUN npm run build || echo "No build script found"
+# Remove dev dependencies after build (optional but cleaner)
+RUN npm prune --production
 
-# Expose port
-EXPOSE 3001
+# Expose port (choose ONE port everywhere, example: 8000)
+EXPOSE 8000
 
-# Start the application in development mode
-CMD ["npm", "run", "start:dev"]
+# Start production server
+CMD ["node", "dist/main"]
