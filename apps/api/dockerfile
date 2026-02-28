@@ -10,6 +10,7 @@ RUN npm ci
 
 # Copy source code
 COPY . .
+COPY .env.production ./
 
 # Create uploads directories
 RUN mkdir -p uploads/pdfs uploads/videos

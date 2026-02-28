@@ -6,6 +6,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 import { existsSync, mkdirSync } from 'fs';
+import { DatabaseSeeder } from './seeders/database.seeder';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -46,16 +47,30 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  // get UsersService
+  // get UsersService and DatabaseSeeder
   const usersService = app.get(UsersService);
+  const databaseSeeder = app.get(DatabaseSeeder);
+
   // seed admin once
   await seedAdmin(usersService);
+
+  // Seed database if in production and database is empty
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      await databaseSeeder.seed();
+      console.log('✅ Database seeding completed');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred';
+      console.log('⚠️  Database seeding skipped or failed:', errorMessage);
+    }
+  }
 
   const PORT = process.env.PORT;
   await app.listen(PORT || 3001);
   console.log('env', process.env.NODE_ENV);
-
   console.log('Using env file:', `.env.${process.env.NODE_ENV || 'local'}`);
   console.log(`🚀 API running on http://localhost:${PORT}`);
 }
+
 bootstrap();
