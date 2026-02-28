@@ -7,7 +7,6 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "docker:clean": "docker compose down -v --remove-orphans",
-
     "build": "cd apps/api && npm install && npm run build",
     "start": "cd apps/api && node dist/main.js",
     "start:dev": "cd apps/api && npm run start:dev",
