@@ -67,7 +67,7 @@ async function bootstrap() {
   }
 
   const PORT = process.env.PORT;
-  await app.listen(PORT || 3001);
+  await app.listen(PORT, '0.0.0.0');
   console.log('env', process.env.NODE_ENV);
   console.log('Using env file:', `.env.${process.env.NODE_ENV || 'local'}`);
   console.log(`🚀 API running on http://localhost:${PORT}`);
