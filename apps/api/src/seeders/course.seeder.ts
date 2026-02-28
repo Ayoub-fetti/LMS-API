@@ -190,7 +190,7 @@ export class CourseSeeder {
     });
 
     const fullTypesQuiz = await this.quizModel.create({
-      moduleId: webModule1._id,
+      moduleId: webModule2._id, // ← changed from webModule1._id
       passingScore: 20,
       status: QuizStatus.PUBLISHED,
       questions: [

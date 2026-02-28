@@ -1,10 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
-  experimental: {
-    // Remove any invalid experimental features
-  },
+  // Remove 'standalone' — Vercel handles deployment natively
 };
 
 export default nextConfig;

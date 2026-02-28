@@ -10,8 +10,10 @@ export class UserSeeder {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async seed() {
-    const count = await this.userModel.countDocuments();
-    if (count > 0) {
+    // Check for trainers/learners specifically, not just any user (admin exists already)
+    const trainerCount = await this.userModel.countDocuments({ role: Role.TRAINER });
+    const learnerCount = await this.userModel.countDocuments({ role: Role.LEARNER });
+    if (trainerCount > 0 && learnerCount > 0) {
       console.log('Users already seeded, skipping...');
       return;
     }

@@ -47,7 +47,7 @@ async function bootstrap() {
   });
 
   // 🔥 VERY IMPORTANT FOR AZURE
-  const PORT = process.env.PORT || 8000;
+  const PORT = process.env.PORT || 3001;
 
   // 🚀 Start server FIRST
   await app.listen(PORT, '0.0.0.0');
