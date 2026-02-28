@@ -22,6 +22,7 @@ jobs:
         run: npm install
 
       # Install and build the API
+      # Install and build the API
       - name: Install API dependencies
         run: cd apps/api && npm install
 
