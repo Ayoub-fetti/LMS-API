@@ -2,35 +2,28 @@
 
 /* ===== Base variables ===== */
 :root {
-  --primary: #261144;
-  --primary-hover: #3a1a5e;
-  --secondary: #ad82de;
-  /* Added secondary-hover */
-  --secondary-hover: #9966cc;
+  --primary: #2563eb;       /* Bright blue accent */
+  --primary-hover: #1d4ed8;
+  --secondary: #10b981;     /* Green accent for highlights */
+  --secondary-hover: #059669;
 
-  --background: #f7f5fb;
-  --foreground: #1e1b2e;
+  --background: #ffffff;    /* Pure white background */
+  --foreground: #1f2937;    /* Dark gray text for readability */
 
-  --surface: #ffffff;
-  --muted: #5a5670;
-  --border: #e3d9f3;
+  --surface: #ffffff;        /* Cards / surfaces */
+  --muted: #6b7280;          /* Muted text */
+  --border: #e5e7eb;         /* Light gray borders */
 
-  /* Feedback colors */
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
   --info: #3b82f6;
 
-  /* Neutral gray scale */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-600: #4b5563;
-  --gray-900: #111827;
+  --font-sans: 'Inter', Arial, sans-serif;
+  --font-mono: 'Fira Code', monospace;
 }
 
-/* ===== Tailwind theme mapping ===== */
+/* Tailwind mapping */
 @theme inline {
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
@@ -48,22 +41,8 @@
   --color-error: var(--error);
   --color-info: var(--info);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-/* ===== Dark mode ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f0818;
-    --foreground: #eae6f5;
-    --surface: #1c0f33;
-    --muted: #a094b8;
-    --border: #2f1b4d;
-    --primary-hover: #3d2161;
-    /* Added secondary-hover for dark mode */
-    --secondary-hover: #8a59c2; 
-  }
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
 body {
@@ -77,7 +56,7 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px var(--background) inset !important;
-    -webkit-text-fill-color: var(--foreground) !important;
-    transition: background-color 5000s ease-in-out 0s;
+  -webkit-box-shadow: 0 0 0 1000px var(--background) inset !important;
+  -webkit-text-fill-color: var(--foreground) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
